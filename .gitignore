@@ -1,0 +1,23 @@
+# Node modules
+node_modules/
+dist/
+.tmp/
+.env
+.env.local
+
+# Angular cache
+front/.angular/cache/
+front/.angular/
+front/.output/
+
+# NestJS build
+back/dist/
+back/.cache/
+
+# Logs
+npm-debug.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
