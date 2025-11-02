@@ -1,0 +1,67 @@
+@let posts = filtered();
+
+@if (posts.length) {
+  <div class="space-y-10">
+    @for (post of posts; track post.id) {
+      <article class="flex flex-col gap-6 border-b border-white/5 pb-10 last:border-0 last:pb-0 md:flex-row md:items-start">
+        <div class="flex-1 space-y-4">
+          @let tags = post.tags ?? [];
+          @let snippet = post.snippet;
+
+          <div class="flex items-center gap-3">
+            <span class="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-[#3f3f46] to-[#27272a] text-base font-semibold text-white">
+              {{ post.title.charAt(0).toUpperCase() }}
+            </span>
+            <div>
+              <p class="text-sm font-semibold text-zinc-100">NgPodium Editorial</p>
+              <p class="text-xs text-zinc-500">{{ tags.length ? (tags[0] | titlecase) : 'Featured post' }}</p>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <h3 class="text-2xl font-bold tracking-tight text-white">{{ post.title }}</h3>
+            <p class="text-sm leading-relaxed text-zinc-400">
+              {{ snippet | slice:0:220 }}{{ snippet.length > 220 ? '…' : '' }}
+            </p>
+          </div>
+
+          <footer class="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+            <span>{{ post.date | date:'MMM d' }}</span>
+            @if (tags.length) {
+              <div class="flex flex-wrap items-center gap-2">
+                @for (tag of tags; track tag) {
+                  <span class="rounded-full border border-white/15 bg-white/10 px-2 py-0.5 text-[11px] uppercase tracking-[0.18em] text-zinc-200">
+                    {{ tag }}
+                  </span>
+                }
+              </div>
+            }
+            <a
+              class="ml-auto inline-flex items-center gap-1 rounded-full border border-white/10 px-3 py-1 text-zinc-300 transition hover:border-white/40 hover:text-white"
+              [routerLink]="['/posts', post.id]"
+            >
+              Read post
+              <i class="pi pi-arrow-right"></i>
+            </a>
+          </footer>
+        </div>
+
+        <div class="aspect-video w-full overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-[#27272a] to-[#18181b] md:w-56">
+          @if (post.imageUrl) {
+            <img [src]="post.imageUrl" alt="{{ post.title }}" class="h-full w-full object-cover" />
+          } @else {
+            <div class="grid h-full w-full place-items-center text-xs uppercase tracking-[0.2em] text-zinc-600">
+              {{ tags.length ? tags[0] : 'NgPodium' }}
+            </div>
+          }
+        </div>
+      </article>
+    }
+  </div>
+} @else {
+  <div class="grid place-items-center rounded-2xl border border-dashed border-white/10 p-10 text-center text-sm text-zinc-500">
+    <p class="max-w-md leading-relaxed">
+      No posts found.
+    </p>
+  </div>
+}

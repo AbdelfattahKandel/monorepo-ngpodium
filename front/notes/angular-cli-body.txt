@@ -1,0 +1,133 @@
+# Angular CLI: Essential Commands
+
+Angular is a JavaScript framework designed for modern web application development.
+
+Angular CLI (Command Line Interface) is the official tool for Angular.
+It allows you to create, manage, and optimize projects with ease.
+
+## What we’ll cover
+- Start an Angular application
+- Structure an Angular application
+- Develop an Angular application
+
+---
+
+## What is Angular CLI?
+CLI stands for Command Line Interface.
+Angular CLI is a tool that lets you initialize, develop, and maintain Angular apps.
+
+- Latest releases: https://github.com/angular/angular-cli/releases
+- Official docs: https://angular.io/cli
+- Prerequisite: Install Node.js first
+
+### Install / Uninstall Angular CLI
+```bash
+# Uninstall angular-cli
+npm uninstall -g @angular/cli
+
+# Install latest
+npm install -g @angular/cli
+
+# Install a specific version
+npm install -g @angular/cli@15.0.2
+
+# Check installed version
+ng --version
+```
+
+---
+
+## Creating an Angular Project
+
+Syntax (two ways):
+```bash
+ng new [project-name] [options]
+ng n [project-name] [options]
+```
+
+- `new` or `n`: create application
+- `project-name`: arbitrary project name
+- `options`: adapt generation (routing, defaults, etc.)
+
+Common options:
+- `--routing`: adds routing and creates `app-routing.module.ts`
+- `--defaults`: selects default choices automatically
+
+Examples:
+```bash
+# Manual options
+ng new angular-starter
+
+# With defaults (no prompts)
+ng new angular-starter --defaults
+
+# With routing
+ng new angular-starter --routing
+```
+
+---
+
+## Generating a Component
+
+Syntax:
+```bash
+ng generate component [component-name] [options]
+ng gc [component-name] [options]
+```
+
+Examples:
+```bash
+# Create home component under app/home
+ng generate component home
+
+# Create contact component under app/components/contact
+ng generate component components/contact
+```
+
+What happens:
+- Creates directory and files:
+  - `*.component.ts`, `*.component.html`, `*.component.css`, `*.component.spec.ts`
+- Updates declarations automatically
+
+---
+
+## Generating a Module
+
+Syntax:
+```bash
+ng generate module [module-name] [options]
+ng gm [module-name] [options]
+```
+
+Examples:
+```bash
+# Create home module under app/home
+ng generate module home
+
+# Flat module directly under app
+ng generate module home --flat
+
+# Create contact module under app/modules/contact
+ng generate module modules/contact
+
+# Flat module under app/modules
+ng generate module modules/contact --flat
+```
+
+What happens:
+- Creates `*.module.ts` in the target folder (flat = no subfolder)
+
+---
+
+## Generating a Class
+
+Syntax:
+```bash
+ng generate class [class-name]
+```
+
+Example:
+```bash
+# Creates data.ts and data.spec.ts under src/app
+ng generate class data
+```

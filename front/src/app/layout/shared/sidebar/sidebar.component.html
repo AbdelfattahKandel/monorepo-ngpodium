@@ -1,0 +1,35 @@
+<aside class="flex h-full w-full max-w-xs flex-col gap-6 border-r border-white/5 bg-[#0b0b0f] px-6 py-8 text-zinc-200">
+  <div class="flex items-center justify-content-start text-xl font-semibold tracking-tight text-white">
+    <button
+      type="button"
+      class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-sm text-zinc-300 transition hover:border-white/30 hover:text-white"
+      aria-label="Toggle menu"
+      (click)="onToggle()"
+    >
+      <i class="pi pi-bars"></i>
+    </button>
+  </div>
+
+  <nav class="flex flex-col gap-1 text-sm">
+    @for (link of links(); track link.label) {
+      <a
+        class="flex items-center gap-3 rounded-full px-3 py-2 text-zinc-300 transition hover:bg-white/5 hover:text-white"
+        [routerLink]="link.route ?? null"
+        [attr.role]="link.route ? 'link' : 'presentation'"
+        [class.cursor-default]="!link.route"
+      >
+        <span class="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-base">
+          <i [attr.class]="'pi ' + link.icon"></i>
+        </span>
+        <div class="flex flex-col">
+          <span class="font-medium">{{ link.label }}</span>
+          @if (link.description) {
+            <span class="text-xs text-zinc-500">{{ link.description }}</span>
+          }
+        </div>
+      </a>
+    }
+  </nav>
+
+
+</aside>

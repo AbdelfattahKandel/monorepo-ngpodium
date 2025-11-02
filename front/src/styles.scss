@@ -1,0 +1,57 @@
+
+@use "tailwindcss";
+@use "primeicons/primeicons.css";
+@import 'highlight.js/styles/vs2015.css';
+
+:root {
+  --app-background: linear-gradient(135deg, #080808 0%, #0A0A0A 100%);
+}
+
+body {
+  background: var(--app-background);
+}
+
+/* Markdown content defaults */
+article.prose {
+  line-height: 1.75;
+  max-width: 100%;
+
+  /* vertical rhythm: every sibling has top margin */
+  > * + * {
+    margin-top: 1rem;
+  }
+
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 0.15rem 0.35rem;
+    border-radius: 0.35rem;
+  }
+  pre {
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #0b0b0e;
+    padding: 1rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+  }
+  pre code {
+    background: transparent;
+    padding: 0;
+  }
+  h1, h2, h3 {
+    color: #fff;
+    line-height: 1.25;
+  }
+  h1 { font-size: 1.75rem; margin-top: 1.25rem; }
+  h2 { font-size: 1.4rem; margin-top: 1.2rem; }
+  h3 { font-size: 1.2rem; margin-top: 1rem; }
+  p {
+    color: #d4d4d8;
+    margin: 0.25rem 0;
+  }
+  ul, ol { padding-left: 1.25rem; }
+  li { margin: 0.25rem 0; }
+  img { margin: 1rem 0; border-radius: 0.75rem; }
+}

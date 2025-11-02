@@ -1,0 +1,88 @@
+<header
+  class="my-2 p-2 border-b border-zinc-800/60 backdrop-blur-xl shadow-lg shadow-black/50 transition-all duration-500"
+  style="background: var(--app-background)"
+>
+  <div class="mx-auto flex w-full max-w-6xl flex-col items-center gap-5 md:flex-row md:justify-between">
+    
+    <div class="flex w-full items-center justify-between md:w-auto">
+      <button
+        type="button"
+        class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-zinc-300 transition hover:border-white/30 hover:text-white md:hidden"
+        aria-label="Open menu"
+        (click)="onMenuToggleClick()"
+      >
+        <i class="pi pi-bars"></i>
+      </button>
+
+      <a
+      [routerLink]="['/']"
+      class="flex items-center justify-center gap-3 text-3xl font-bold tracking-tight transition duration-500 select-none"
+      >
+      <span
+        class="bg-gradient-to-r from-gray-200 via-zinc-100 to-zinc-400 
+               bg-clip-text text-transparent drop-shadow-[0_1px_10px_rgba(255,255,255,0.15)]"
+      >
+        Ng&nbsp;Podium
+      </span>
+      </a>
+    </div>
+
+    <form
+      class="relative flex w-full items-center rounded-full border border-white/10
+             bg-gradient-to-r from-zinc-900/90 to-zinc-800/80
+             px-1 shadow-inner shadow-black/40 transition duration-300
+             focus-within:border-white/20 focus-within:shadow-[0_0_25px_rgba(255,255,255,0.08)]
+             md:flex-1"
+      data-search="1"
+      (submit)="onSearchSubmit($event)"
+    >
+      <label class="sr-only" for="blog-search">Search posts</label>
+      <span class="flex h-10 w-10 items-center justify-center text-zinc-400" aria-hidden="true">
+        <i class="pi pi-search"></i>
+      </span>
+      <input
+        [formControl]="searchControl"
+        id="blog-search"
+        type="search"
+        autocomplete="off"
+        [attr.placeholder]="placeholder()"
+        aria-label="Search blog posts"
+        class="w-full bg-transparent px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:outline-none"
+      />
+      @if (isOpen() && suggestions().length) {
+        <ul
+          class="absolute left-0 right-0 top-full z-30 mt-2 max-h-72 overflow-auto rounded-md border border-white/10 bg-zinc-900/95 backdrop-blur divide-y divide-white/5"
+          role="listbox"
+          aria-label="Search suggestions"
+        >
+          @for (s of suggestions(); track s.id) {
+            <li role="option">
+              <a
+                class="block px-3 py-2 text-sm text-zinc-200 hover:bg-white/5"
+                [routerLink]="['/posts', s.id]"
+                (click)="onSuggestionClick()"
+              >
+                {{ s.title }}
+              </a>
+            </li>
+          }
+        </ul>
+      }
+    </form>
+
+    <button
+      type="button"
+      class="inline-flex w-full items-center justify-center rounded-full
+             bg-gradient-to-r from-zinc-700 via-zinc-600 to-zinc-500
+             px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-black/50
+             transition duration-300 hover:-translate-y-0.5
+             hover:from-zinc-600 hover:to-zinc-400
+             hover:shadow-[0_0_25px_rgba(255,255,255,0.12)] md:w-auto cursor-pointer"
+      (click)="onWritePostClick()"
+    >
+      Write post<i class="pi pi-pen-to-square
+ ml-2"></i>
+    </button>
+
+  </div>
+</header>

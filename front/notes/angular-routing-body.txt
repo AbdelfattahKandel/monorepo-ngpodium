@@ -1,0 +1,474 @@
+# Angular Routing: Step-by-Step Guide
+
+## How do we do it?
+To wire routing into our Angular application we will:
+
+1. Understand what routing is.
+2. Initialize an Angular project structure.
+3. Generate the core pages/components.
+4. Configure primary routes.
+5. Introduce child (nested) routes.
+6. Run the application and execute tests.
+
+---
+
+## Before we begin: what is routing?
+Routing decides which view to display based on the URL—just like a stationmaster directing trains. If routing fails, the app has no idea where visitors should go, and the experience collapses.
+
+### Real-life analogy
+- It is the weekend, you and your family want to pick a movie.
+- You open Wikipedia on a phone or laptop and jump between summaries.
+- The URL changes: `https://fr.wikipedia.org/wiki/Le_Roi_lion` or `https://fr.wikipedia.org/wiki/Avengers:_Endgame`.
+- Wikipedia (the stationmaster) studies the slug and serves the corresponding page.
+
+Routing is the **hypertext** glue of the web. Hypertext links tie multiple HTML pages together. Without routing, it’s like flying without air traffic control—chaos.
+
+> “Otherwise, AI or not AI, where’s the real Wild Bill Kelso? My name is Buffalo Bill Kelso, when it’s war, I wage war.”
+
+We’ll apply the same determination as we wire routing into Angular.
+
+---
+
+## Project setup
+
+### Prerequisites
+- Node.js: JavaScript runtime.
+- Git: version control.
+- Angular CLI: official tooling.
+- Visual Studio Code (or your favorite editor).
+
+Follow the detailed setup tutorial: <https://www.ganatan.com/tutorials/demarrer-avec-angular>
+
+### Clone the starter project
+```bash
+# Create a workspace directory
+mkdir demo
+cd demo
+
+# Get the source
+git clone https://github.com/ganatan/angular-react-starter
+
+# Move into the Angular front-end
+cd angular-react-starter
+cd frontend-angular
+
+# Install dependencies and run
+npm install
+npm run start
+
+# Open the app
+http://localhost:4200/
+```
+
+### Default project structure (Angular CLI)
+```
+src/
+  app/
+  assets/
+  environments/
+package.json
+```
+
+> Since Angular 15 the `environments` folder isn’t generated automatically—we add it manually when needed.
+
+### Recommended structure
+```
+app/
+  core/        # shared across every project
+  features/    # app-specific features
+    about/
+    contact/
+    home/
+    login/
+    not-found/
+    signup/
+  shared/      # reusable components
+assets/
+environments/
+```
+
+See Gaëtan Rouziès’ architecture discussion: <https://www.youtube.com/watch?v=JUFTGXUjnuE>
+
+---
+
+## Initialization overview
+
+Angular provides the `@angular/router` library.
+
+- **Angular ≤16**: routing lived in a dedicated `app-routing.module.ts`.
+- **Angular ≥17**: routing is implicit and driven by three files:
+  - `app.ts`
+  - `app.config.ts`
+  - `app.routes.ts`
+
+Throughout the tutorial we will use Angular CLI commands (`ng generate …`) so the boilerplate is produced automatically.
+
+### Generate the six core pages
+Each page will become a route.
+
+```bash
+# Method 1
+ng generate component features/contact
+ng generate component features/login
+ng generate component features/signup
+ng generate component features/home
+ng generate component features/about
+ng generate component features/not-found
+
+# Method 2 (shorthand)
+ng g c features/contact
+ng g c features/login
+ng g c features/signup
+ng g c features/home
+ng g c features/about
+ng g c features/not-found
+```
+
+Each command creates a folder (if needed) plus four files—HTML, CSS, TypeScript, and spec.
+
+### Files to adjust
+We will update the following:
+
+- `src/app/app-routes.ts`
+- `src/styles.css`
+- `src/app/app.html`
+- `src/app/app.css`
+- `src/app/app.ts`
+- `src/app/app.spec.ts`
+
+#### src/app/app-routes.ts
+```ts
+import { Routes } from '@angular/router';
+
+import { Home } from './features/home/home';
+import { Login } from './features/login/login';
+import { Signup } from './features/signup/signup';
+import { NotFound } from './features/not-found/not-found';
+import { About } from './features/about/about';
+import { Contact } from './features/contact/contact';
+
+export const routes: Routes = [
+  { path: '', component: Home },
+  { path: 'login', component: Login },
+  { path: 'signup', component: Signup },
+  { path: 'about', component: About },
+  { path: 'contact', component: Contact },
+  { path: '**', component: NotFound }
+];
+```
+
+#### src/styles.css
+```css
+body {
+  color: black;
+  font-weight: 400;
+}
+```
+
+#### src/app/app.html
+```html
+<div class="app">
+  <header>
+    <section>
+      <h1>{{ title }}</h1>
+    </section>
+    <nav>
+      <h2>3 Links with Routes</h2>
+      <ul>
+        <li><a routerLink="/">Home</a></li>
+        <li><a routerLink="/login">Login</a></li>
+        <li><a routerLink="/signup">Signup</a></li>
+      </ul>
+      <h3>2 Links with Child Routes</h3>
+      <ul>
+        <li><a routerLink="/about">About</a></li>
+        <li><a routerLink="/contact">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <h4>Routes Result</h4>
+    <router-outlet></router-outlet>
+  </main>
+
+  <footer>
+    <a [href]="footerUrl">{{ footerLink }}</a>
+  </footer>
+</div>
+```
+
+#### src/app/app.css
+```css
+h1 {
+  color: blue;
+}
+
+.app {
+  font-family: Arial, Helvetica, sans-serif;
+  max-width: 500px;
+  margin: auto;
+}
+```
+
+#### src/app/app.ts
+```ts
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterLink, RouterOutlet } from '@angular/router';
+
+@Component({
+  selector: 'app-root',
+  imports: [CommonModule, RouterLink, RouterOutlet],
+  templateUrl: './app.html',
+  styleUrl: './app.css'
+})
+export class App {
+  title = 'angular-routing';
+  footerUrl = 'https://www.ganatan.com';
+  footerLink = 'www.ganatan.com';
+}
+```
+
+#### src/app/app.spec.ts
+Add `ActivatedRoute` (or `RouterTestingModule`) so unit tests pass.
+
+```ts
+import { TestBed } from '@angular/core/testing';
+import { App } from './app';
+import { ActivatedRoute } from '@angular/router';
+
+describe('App', () => {
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [App],
+      providers: [
+        { provide: ActivatedRoute, useValue: {} }
+      ]
+    }).compileComponents();
+  });
+
+  it('should create the app', () => {
+    const fixture = TestBed.createComponent(App);
+    const app = fixture.componentInstance;
+    expect(app).toBeTruthy();
+  });
+
+  it('should render title', () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('h1')?.textContent).toContain('angular-routing');
+  });
+});
+```
+
+Run the dev server and inspect the routes:
+
+```bash
+npm run start
+http://localhost:4200
+```
+
+Visit `/`, `/login`, `/signup`, and note that `/lien-inconnu` should show the not-found page. It’s not pretty yet—we’ll polish with Bootstrap later.
+
+---
+
+## Child routes (nested routing)
+
+To manage sub-navigation (e.g., statistics under Contact or About), we add nested routes. Angular’s docs cover this in detail: <https://angular.io/guide/router#child-route-configuration>.
+
+### Generate child components
+```bash
+# Contact sub-pages
+ng generate component features/contact/mailing
+ng generate component features/contact/mapping
+ng generate component features/contact/website
+
+# About sub-pages
+ng generate component features/about/skill
+ng generate component features/about/experience
+```
+
+Each command generates four files (HTML/CSS/TS/spec).
+
+### Update templates to include router-outlet
+**features/contact/contact.html**
+```html
+<div>
+  <p>contact works!</p>
+  <ul>
+    <li><a routerLink="/contact/mailing">Mailing</a></li>
+    <li><a routerLink="/contact/mapping">Mapping</a></li>
+    <li><a routerLink="/contact/website">Website</a></li>
+  </ul>
+  <h4>Child Routes Result</h4>
+  <router-outlet></router-outlet>
+</div>
+```
+
+**features/contact/contact.ts**
+```ts
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterLink, RouterOutlet } from '@angular/router';
+
+@Component({
+  selector: 'app-contact',
+  imports: [CommonModule, RouterLink, RouterOutlet],
+  templateUrl: './contact.html',
+  styleUrl: './contact.css'
+})
+export class Contact {}
+```
+
+**features/about/about.html**
+```html
+<div>
+  <p>about works!</p>
+  <ul>
+    <li><a routerLink="/about/experience">Experience</a></li>
+    <li><a routerLink="/about/skill">Skill</a></li>
+  </ul>
+  <h4>Child Routes Result</h4>
+  <router-outlet></router-outlet>
+</div>
+```
+
+**features/about/about.ts**
+```ts
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular.common';
+import { RouterLink, RouterOutlet } from '@angular/router';
+
+@Component({
+  selector: 'app-about',
+  imports: [CommonModule, RouterLink, RouterOutlet],
+  templateUrl: './about.html',
+  styleUrl: './about.css'
+})
+export class About {}
+```
+
+### Update routing configuration
+**src/app/app-routes.ts**
+```ts
+import { Routes } from '@angular/router';
+
+import { Home } from './features/home/home';
+import { Login } from './features/login/login';
+import { Signup } from './features/signup/signup';
+import { NotFound } from './features/not-found/not-found';
+import { About } from './features/about/about';
+import { Contact } from './features/contact/contact';
+
+import { Experience } from './features/about/experience/experience';
+import { Skill } from './features.about/skill/skill';
+import { Mailing } from './features/contact/mailing/mailing';
+import { Mapping } from './features/contact/mapping/mapping';
+import { Website } from './features/contact/website/website';
+
+export const routes: Routes = [
+  { path: '', component: Home },
+  { path: 'login', component: Login },
+  { path: 'signup', component: Signup },
+  {
+    path: 'about',
+    component: About,
+    children: [
+      { path: '', component: Experience },
+      { path: 'experience', component: Experience },
+      { path: 'skill', component: Skill }
+    ]
+  },
+  {
+    path: 'contact',
+    component: Contact,
+    children: [
+      { path: '', component: Mailing },
+      { path: 'mailing', component: Mailing },
+      { path: 'mapping', component: Mapping },
+      { path: 'website', component: Website }
+    ]
+  },
+  { path: '**', component: NotFound }
+];
+```
+
+### Update tests for About/Contact
+Ensure `ActivatedRoute` is provided to avoid dependency issues.
+
+**features/contact/contact.spec.ts**
+```ts
+import { ComponentFixture, TestBed } from '@angular/core.testing';
+import { Contact } from './contact';
+import { ActivatedRoute } from '@angular/router';
+
+describe('Contact', () => {
+  let component: Contact;
+  let fixture: ComponentFixture<Contact>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [Contact],
+      providers: [{ provide: ActivatedRoute, useValue: {} }]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(Contact);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+```
+
+**features/about/about.spec.ts**
+```ts
+import { ComponentFixture, TestBed } from '@angular.core.testing';
+import { About } from './about';
+import { ActivatedRoute } from '@angular.router';
+
+describe('About', () => {
+  let component: About;
+  let fixture: ComponentFixture<About>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [About],
+      providers: [{ provide: ActivatedRoute, useValue: {} }]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(About);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+```
+
+---
+
+## Run, test, ship
+
+```bash
+# Development
+npm run start
+http://localhost:4200/
+
+# Unknown route (should hit not-found)
+http://localhost:4200/lien-inconnu
+
+# Unit tests
+npm run test
+
+# Production build
+npm run build
+```
+
+Routing is now configured—from the basics to nested routes. As you keep iterating, you can layer on styling (Bootstrap, Tailwind, etc.) and more complex navigation scenarios.

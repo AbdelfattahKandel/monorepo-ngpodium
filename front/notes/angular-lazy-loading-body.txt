@@ -1,0 +1,285 @@
+# Angular 20.1.3 Lazy Loading Guide
+
+## Why use Lazy Loading?
+- Speed up the initial application loading.
+- Load only the necessary features, on demand.
+- Optimize the user experience with smoother navigation.
+
+If you do not have time to read the entire guide, download it now.
+
+---
+
+## What are we going to do?
+We will configure lazy loading in an Angular 20.1.3 application. We will start from an existing project that already includes routing and was generated with Angular CLI.
+
+The live application is available at: <https://angular.ganatan.com>
+
+All created sources are listed at the end of this tutorial.
+
+---
+
+## Before we begin
+Website loading speed is crucial: beyond 3 seconds, **57% of users abandon the site**.
+
+Lazy loading helps: it breaks your code into chunks that load only when needed.
+
+---
+
+## Project creation
+We will reuse an existing project that already contains routing.
+
+```bash
+# Create workspace
+mkdir demo
+cd demo
+
+# Clone the project
+git clone https://github.com/ganatan/angular-react-routing
+
+# Navigate to Angular front-end
+cd angular-react-routing
+cd frontend-angular
+
+# Install dependencies
+npm install
+
+# Start the dev server
+npm run start
+
+# Open in your browser
+http://localhost:4200/
+```
+
+---
+
+## Theory
+`ng build` invokes esbuild, which bundles the project and emits assets under `dist/`. Our base project has six pages: Home, About, Contact, Login, Signup, Not Found.
+
+Without lazy loading, the compiler produces a single `main.js` (or `main.xxxxxxxx.js`) that contains code for all pages. The more pages, the larger `main.js`, leading to slower initial load.
+
+Lazy loading splits `main.js` into multiple chunks, loading only what is required at navigation time.
+
+### Verify the theory
+After running `npm run build`, inspect `dist/angular-starter/browser/main.xxxxxxxx.js`. You can find strings like “Home works!”, “about works!”, etc.
+
+---
+
+## Practical implementation
+Standalone components make lazy loading straightforward. We will follow Angular’s documentation: <https://angular.dev/guide/routing/common-router-tasks#lazy-loading>
+
+### app.routes.ts before lazy loading
+```ts
+import { Routes } from '@angular/router';
+
+import { Home } from './features/home/home';
+import { Login } from './features/login/login';
+import { Signup } from './features/signup/signup';
+import { NotFound } from './features/not-found/not-found';
+import { About } from './features/about/about';
+import { Contact } from './features/contact/contact';
+
+import { Experience } from './features/about/experience/experience';
+import { Skill } from './features/about/skill/skill';
+
+import { Mailing } from './features/contact/mailing/mailing';
+import { Mapping } from './features/contact/mapping/mapping';
+import { Website } from './features/contact/website/website';
+
+export const routes: Routes = [
+  { path: '', component: Home },
+  { path: 'login', component: Login },
+  { path: 'signup', component: Signup },
+  {
+    path: 'about',
+    component: About,
+    children: [
+      { path: '', component: Experience },
+      { path: 'experience', component: Experience },
+      { path: 'skill', component: Skill }
+    ]
+  },
+  {
+    path: 'contact',
+    component: Contact,
+    children: [
+      { path: '', component: Mailing },
+      { path: 'mailing', component: Mailing },
+      { path: 'mapping', component: Mapping },
+      { path: 'website', component: Website }
+    ]
+  },
+  { path: '**', component: NotFound }
+];
+```
+
+### app.routes.ts after lazy loading
+```ts
+import { Routes } from '@angular/router';
+
+import { Home } from './features/home/home';
+import { NotFound } from './features/not-found/not-found';
+
+export const routes: Routes = [
+  { path: '', component: Home },
+  {
+    path: 'login',
+    loadComponent: () => import('./features/login/login').then(m => m.Login)
+  },
+  {
+    path: 'signup',
+    loadComponent: () => import('./features/signup/signup').then(m => m.Signup)
+  },
+  {
+    path: 'contact',
+    loadChildren: () => import('./features/contact/contact.routes').then(m => m.routes)
+  },
+  {
+    path: 'about',
+    loadChildren: () => import('./features/about/about.routes').then(m => m.routes)
+  },
+  { path: '**', component: NotFound }
+];
+```
+
+Notice the difference:
+- `component: Login` becomes `loadComponent: () => import('./features/login/login').then(m => m.Login)`
+- Nested feature routes use `loadChildren` pointing to child route files.
+
+---
+
+## Verification
+After applying lazy loading, run a production build again:
+
+```bash
+npm run build
+```
+
+The `dist/angular-starter/browser` folder now contains multiple chunk files:
+- `main.js`
+- `chunk-xxx1.js`
+- `chunk-xxx2.js`
+- `chunk-xxx3.js`
+- `chunk-xxx4.js`
+
+(Names vary by build.) Each route’s code lives in a separate chunk that loads only when needed.
+
+### Runtime behaviour
+Open Developer Tools > Network tab in Chrome:
+- Initial load: `main.js` downloads.
+- Navigate to Login: `chunk-xxx2.js` downloads (once).
+- Navigate to Signup: `chunk-xxx3.js` downloads (once).
+- Navigate to Contact: `chunk-xxx4.js` downloads (once).
+- If you refresh on `/contact`, only `main.js` + the Contact chunk load.
+
+Result: initial bundle size remains stable regardless of how many pages exist.
+
+---
+
+## Child routes
+We add lazy loading to child routes via dedicated route and config files.
+
+### about.routes.ts
+```ts
+import { Routes } from '@angular/router';
+import { About } from './about';
+
+export const routes: Routes = [
+  {
+    path: '',
+    component: About,
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./experience/experience').then(m => m.Experience)
+      },
+      {
+        path: 'experience',
+        loadComponent: () => import('./experience/experience').then(m => m.Experience)
+      },
+      {
+        path: 'skill',
+        loadComponent: () => import('./skill/skill').then(m => m.Skill)
+      },
+      {
+        path: '**',
+        loadComponent: () => import('./experience/experience').then(m => m.Experience)
+      }
+    ]
+  }
+];
+```
+
+### about.config.ts
+```ts
+import { ApplicationConfig } from '@angular/core';
+import { provideRouter } from '@angular/router';
+
+import { routes } from './about.routes';
+
+export const aboutConfig: ApplicationConfig = {
+  providers: [provideRouter(routes)]
+};
+```
+
+### contact.routes.ts
+```ts
+import { Routes } from '@angular/router';
+import { Contact } from './contact';
+
+export const routes: Routes = [
+  {
+    path: '',
+    component: Contact,
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./mailing/mailing').then(m => m.Mailing)
+      },
+      {
+        path: 'mapping',
+        loadComponent: () => import('./mapping/mapping').then(m => m.Mapping)
+      },
+      {
+        path: 'website',
+        loadComponent: () => import('./website/website').then(m => m.Website)
+      },
+      {
+        path: '**',
+        loadComponent: () => import('./mailing/mailing').then(m => m.Mailing)
+      }
+    ]
+  }
+];
+```
+
+### contact.config.ts
+```ts
+import { ApplicationConfig } from '@angular/core';
+import { provideRouter } from '@angular/router';
+
+import { routes } from './contact.routes';
+
+export const contactConfig: ApplicationConfig = {
+  providers: [provideRouter(routes)]
+};
+```
+
+---
+
+## Tests
+No special changes are required for standalone unit tests. Run the usual commands:
+
+```bash
+# Development
+npm run start
+http://localhost:4200/
+
+# Lint & unit tests
+npm run lint
+npm run test
+
+# Production build
+npm run build
+```
+
+Lazy loading is now in place, delivering faster initial load times while keeping navigation responsive.
